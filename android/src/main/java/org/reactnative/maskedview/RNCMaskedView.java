@@ -11,108 +11,114 @@ import android.view.View;
 import com.facebook.react.views.view.ReactViewGroup;
 
 public class RNCMaskedView extends ReactViewGroup {
-  private static final String TAG = "RNCMaskedView";
+    private static final String TAG = "RNCMaskedView";
 
-  private Bitmap mBitmapMask = null;
-  private boolean mBitmapMaskInvalidated = false;
-  private Paint mPaint;
-  private PorterDuffXfermode mPorterDuffXferMode;
+    private Bitmap mBitmapMask = null;
+    private boolean mBitmapMaskInvalidated = false;
+    private Paint mPaint;
+    private PorterDuffXfermode mPorterDuffXferMode;
 
-  public RNCMaskedView(Context context) {
-    super(context);
+    public RNCMaskedView(Context context) {
+        super(context);
 
-    // Default to hardware rendering, androidRenderingMode prop will override
-    setRenderingMode("hardware");
+        // Default to hardware rendering, androidRenderingMode prop will override
+        setRenderingMode("hardware");
 
-    mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    mPorterDuffXferMode = new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP);
-  }
-
-  @Override
-  protected void dispatchDraw(Canvas canvas) {
-    super.dispatchDraw(canvas);
-
-    if (mBitmapMaskInvalidated) {
-      // redraw mask element to support animated elements
-      updateBitmapMask();
-
-      mBitmapMaskInvalidated = false;
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPorterDuffXferMode = new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP);
     }
 
-    // draw the mask
-    if (mBitmapMask != null) {
-      mPaint.setXfermode(mPorterDuffXferMode);
-      canvas.drawBitmap(mBitmapMask, 0, 0, mPaint);
-      mPaint.setXfermode(null);
-    }
-  }
+    public static Bitmap getBitmapFromView(final View view) {
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
 
-  @Override
-  public void onDescendantInvalidated(View child, View target) {
-    super.onDescendantInvalidated(child, target);
-
-    if (!mBitmapMaskInvalidated) {
-      View maskView = getChildAt(0);
-      if (maskView != null) {
-        if (maskView.equals(child)) {
-          mBitmapMaskInvalidated = true;
+        if (view.getMeasuredWidth() <= 0 || view.getMeasuredHeight() <= 0) {
+            return null;
         }
-      }
-    }
-  }
 
-  @Override
-  protected void onLayout(boolean changed, int l, int t, int r, int b) {
-    super.onLayout(changed, l, t, r, b);
+        final Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(),
+                view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
 
-    if (changed) {
-      mBitmapMaskInvalidated = true;
-    }
-  }
+        final Canvas canvas = new Canvas(bitmap);
 
-  @Override
-  protected void onAttachedToWindow() {
-    super.onAttachedToWindow();
-    mBitmapMaskInvalidated = true;
-  }
+        view.draw(canvas);
 
-  private void updateBitmapMask() {
-    if (this.mBitmapMask != null) {
-      this.mBitmapMask.recycle();
+        return bitmap;
     }
 
-    View maskView = getChildAt(0);
-    if (maskView != null) {
-      maskView.setVisibility(View.VISIBLE);
-      this.mBitmapMask = getBitmapFromView(maskView);
-      maskView.setVisibility(View.INVISIBLE);
-    } else{
-      this.mBitmapMask = null;
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+
+        if (mBitmapMaskInvalidated) {
+            // redraw mask element to support animated elements
+            updateBitmapMask();
+
+            mBitmapMaskInvalidated = false;
+        }
+
+        // draw the mask
+        if (mBitmapMask != null) {
+            mPaint.setXfermode(mPorterDuffXferMode);
+            canvas.drawBitmap(mBitmapMask, 0, 0, mPaint);
+            mPaint.setXfermode(null);
+        }
     }
-  }
 
-  public static Bitmap getBitmapFromView(final View view) {
-    view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+    @Override
+    public void onDescendantInvalidated(View child, View target) {
+        super.onDescendantInvalidated(child, target);
 
-    if (view.getMeasuredWidth() <= 0 || view.getMeasuredHeight() <= 0) {
-      return null;
+        if (!mBitmapMaskInvalidated) {
+            View maskView = getChildAt(0);
+            if (maskView != null) {
+                if (maskView.equals(child)) {
+                    mBitmapMaskInvalidated = true;
+                }
+            }
+        }
     }
 
-    final Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(),
-            view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
 
-    final Canvas canvas = new Canvas(bitmap);
-
-    view.draw(canvas);
-
-    return bitmap;
-  }
-
-  public void setRenderingMode(String renderingMode) {
-    if (renderingMode.equals("software")) {
-      setLayerType(LAYER_TYPE_SOFTWARE, null);
-    } else {
-      setLayerType(LAYER_TYPE_HARDWARE, null);
+        if (changed) {
+            mBitmapMaskInvalidated = true;
+        }
     }
-  }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mBitmapMaskInvalidated = true;
+    }
+
+    private void updateBitmapMask() {
+        if (this.mBitmapMask != null) {
+            this.mBitmapMask.recycle();
+        }
+
+        View maskView = getChildAt(0);
+        if (maskView != null) {
+            maskView.setVisibility(View.VISIBLE);
+            this.mBitmapMask = getBitmapFromView(maskView);
+            maskView.setVisibility(View.INVISIBLE);
+        } else {
+            this.mBitmapMask = null;
+        }
+    }
+
+    public void setRenderingMode(String renderingMode) {
+        if (renderingMode.equals("software")) {
+            setLayerType(LAYER_TYPE_SOFTWARE, null);
+        } else {
+            setLayerType(LAYER_TYPE_HARDWARE, null);
+        }
+    }
+
+    public void setPorterDuffMode(String mode) {
+        PorterDuff.Mode modeEnum = PorterDuff.Mode.valueOf(mode);
+        this.mPorterDuffXferMode = new PorterDuffXfermode(modeEnum);
+        invalidate();
+    }
 }

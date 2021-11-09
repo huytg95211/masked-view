@@ -16,7 +16,12 @@ public class RNCMaskedViewPackage implements ReactPackage {
     return Collections.emptyList();
   }
 
-  @Override
+    @Override
+    public List<Class<? extends JavaScriptModule>> createJSModules() {
+        return null;
+    }
+
+    @Override
   public List<ViewManager> createViewManagers(ReactApplicationContext reactApplicationContext) {
       return Arrays.<ViewManager>asList(
             new RNCMaskedViewManager()

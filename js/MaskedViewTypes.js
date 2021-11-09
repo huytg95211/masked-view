@@ -1,6 +1,6 @@
 // @flow
-import { type Node, type Element } from 'react';
-import { ViewPropTypes } from 'react-native';
+import { type Node, type Element } from 'react'
+import { ViewPropTypes } from 'react-native'
 
 export type MaskedViewProps = typeof ViewPropTypes &
   $ReadOnly<{|
@@ -14,4 +14,8 @@ export type MaskedViewProps = typeof ViewPropTypes &
      * Opt into software rendering to enable animated masks.
      */
     androidRenderingMode?: 'software' | 'hardware',
-  |}>;
+    /**
+     * Update PorterDuff.Mode on android: https://developer.android.com/reference/android/graphics/PorterDuff.Mode
+     */
+    androidPorterDuffMode?: 'SRC_ATOP' | 'SRC_IN',
+  |}>
