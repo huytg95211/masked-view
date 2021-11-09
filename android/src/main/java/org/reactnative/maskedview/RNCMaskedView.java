@@ -25,7 +25,7 @@ public class RNCMaskedView extends ReactViewGroup {
         setRenderingMode("hardware");
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPorterDuffXferMode = new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP);
+        mPorterDuffXferMode = new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT);
     }
 
     public static Bitmap getBitmapFromView(final View view) {
